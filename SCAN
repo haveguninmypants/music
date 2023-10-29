@@ -7,28 +7,23 @@ if geoscanner then
     local chunkX, chunkZ = math.floor(gps.locate())
     local minY, maxY = 77, 77  -- Set the Y-level range from -20 to 30.
 
-    -- Create a table to store ore information.
-    local ores = {}
-
-    -- Initialize progress and ore count variables.
+    -- Initialize progress variables.
     local totalBlocks = (maxY - minY + 1) * 16 * 16
     local scannedBlocks = 0
-    local oreCount = 0
 
-    -- Delete the existing "ORES.txt" file if it exists.
-    if fs.exists("ORES.txt") then
-        fs.delete("ORES.txt")
+    -- Delete the existing "BLOCKS.txt" file if it exists.
+    if fs.exists("BLOCKS.txt") then
+        fs.delete("BLOCKS.txt")
     end
 
-    -- Open the "ORES.txt" file for writing.
-    local file = fs.open("ORES.txt", "w")
+    -- Open the "BLOCKS.txt" file for writing.
+    local file = fs.open("BLOCKS.txt", "w")
 
     -- Create a function to update the progression bar.
     local function updateProgress()
         term.clear()
         term.setCursorPos(1, 1)
         print("Scanning Progress: " .. scannedBlocks .. " / " .. totalBlocks)
-        print("Ores Found: " .. oreCount)
 
         local progress = scannedBlocks / totalBlocks
         local barLength = 20
@@ -37,7 +32,7 @@ if geoscanner then
         print("Progress: " .. progressBar)
     end
 
-    -- Iterate through the chunk and scan for ores.
+    -- Iterate through the chunk and scan for blocks.
     for y = minY, maxY do
         for x = 1, 16 do
             for z = 1, 16 do
@@ -47,30 +42,15 @@ if geoscanner then
                 -- Update progress.
                 updateProgress()
 
-                if blockData and blockData.state == "ore" then
-                    local oreName = blockData.name
-                    local oreAmount = blockData.count
+                if blockData then
+                    local blockName = blockData.name
+                    local blockAmount = blockData.count
 
-                    -- Check if the ore name contains "ore" or "block."
-                    if string.match(oreName, "ore") or string.match(oreName, "block") then
-                        -- Store ore information in the table.
-                        table.insert(ores, {
-                            name = oreName,
-                            amount = oreAmount,
-                            x = chunkX * 16 + x,
-                            y = y,
-                            z = chunkZ * 16 + z
-                        })
-
-                        -- Increment the ore counter.
-                        oreCount = oreCount + 1
-
-                        -- Write ore information to the file.
-                        file.writeLine("Ore: " .. oreName)
-                        file.writeLine("Amount: " .. oreAmount)
-                        file.writeLine("Coordinates: X=" .. ore.x .. " Y=" .. ore.y .. " Z=" .. ore.z)
-                        file.writeLine("--------")
-                    end
+                    -- Write block information to the file.
+                    file.writeLine("Block: " .. blockName)
+                    file.writeLine("Amount: " .. blockAmount)
+                    file.writeLine("Coordinates: X=" .. chunkX * 16 + x .. " Y=" .. y .. " Z=" .. chunkZ * 16 + z)
+                    file.writeLine("--------")
                 end
             end
         end
@@ -79,24 +59,10 @@ if geoscanner then
     -- Close the file.
     file.close()
 
-    -- Display a completion message with the ore count.
+    -- Display a completion message.
     term.clear()
     term.setCursorPos(1, 1)
-    print("Scan results saved to 'ORES.txt'")
-    print("Ores Found: " .. oreCount)
-
-    -- Create a list of blocks in the specified format.
-    local blockList = {}
-    for _, ore in pairs(ores) do
-        local blockInfo = ore.name .. ": " .. ore.amount
-        table.insert(blockList, blockInfo)
-    end
-
-    -- Print the block list.
-    print("Block List:")
-    for _, blockInfo in ipairs(blockList) do
-        print(blockInfo)
-    end
+    print("Scan results saved to 'BLOCKS.txt'")
 else
     -- Display a message if the Geoscanner is not found.
     print("Geoscanner not found.")
