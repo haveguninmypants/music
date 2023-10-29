@@ -1,0 +1,44 @@
+-- Initialize the Geoscanner peripheral.
+local geoscanner = peripheral.find("geoscanner")
+
+if geoscanner then
+    -- Define the coordinates of the current chunk.
+    local chunkX, chunkZ = math.floor(gps.locate())
+    local minY, maxY = 1, 16  -- Adjust the Y-level range as needed.
+
+    -- Create a table to store ore information.
+    local ores = {}
+
+    -- Iterate through the chunk and scan for ores.
+    for y = minY, maxY do
+        for x = 1, 16 do
+            for z = 1, 16 do
+                local blockData = geoscanner.scan(x, y, z)
+
+                if blockData and blockData.state == "ore" then
+                    local oreName = blockData.name
+                    local oreCount = blockData.count
+
+                    -- Store ore information in the table.
+                    table.insert(ores, {
+                        name = oreName,
+                        count = oreCount,
+                        x = chunkX * 16 + x,
+                        y = y,
+                        z = chunkZ * 16 + z
+                    })
+                end
+            end
+        end
+    end
+
+    -- Display the ore information.
+    for _, ore in ipairs(ores) do
+        print("Ore: " .. ore.name)
+        print("Count: " .. ore.count)
+        print("Coordinates: X=" .. ore.x .. " Y=" .. ore.y .. " Z=" .. ore.z)
+        print("--------")
+    end
+else
+    print("Geoscanner not found.")
+end
