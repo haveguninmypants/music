@@ -1,5 +1,5 @@
 -- Initialize the Geoscanner peripheral.
-local geoscanner = peripheral.wrap(right)
+local geoscanner = peripheral.wrap("right")
 
 -- Check if Geoscanner peripheral is found.
 if geoscanner then
