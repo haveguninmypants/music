@@ -5,11 +5,14 @@ local geoscanner = peripheral.wrap("right")
 if geoscanner then
     -- Define the coordinates of the current chunk.
     local chunkX, chunkZ = math.floor(gps.locate())
-    local minY, maxY = 77, 77  -- Set the Y-level range from -20 to 30.
+    local minY, maxY = -20, 30  -- Set the Y-level range from -20 to 30.
 
     -- Initialize progress variables.
     local totalBlocks = (maxY - minY + 1) * 16 * 16
     local scannedBlocks = 0
+
+    -- Create a table to store block information.
+    local blockCounts = {}
 
     -- Delete the existing "BLOCKS.txt" file if it exists.
     if fs.exists("BLOCKS.txt") then
@@ -19,7 +22,7 @@ if geoscanner then
     -- Open the "BLOCKS.txt" file for writing.
     local file = fs.open("BLOCKS.txt", "w")
 
-    -- Create a function to update the progression bar.
+    -- Create a function to update the progression bar and block counts.
     local function updateProgress()
         term.clear()
         term.setCursorPos(1, 1)
@@ -30,6 +33,32 @@ if geoscanner then
         local progressChars = math.floor(barLength * progress)
         local progressBar = "[" .. string.rep("=", progressChars) .. string.rep(" ", barLength - progressChars) .. "]"
         print("Progress: " .. progressBar)
+
+        -- Display block counts.
+        term.setCursorPos(1, 4)
+        print("Block Counts:")
+        for blockName, blockCount in pairs(blockCounts) do
+            print(blockName .. ": " .. blockCount)
+        end
+
+        -- List the top 5 most common blocks.
+        term.setCursorPos(1, 13)
+        print("Top 5 Blocks:")
+        local sortedBlocks = {}
+        for blockName, blockCount in pairs(blockCounts) do
+            table.insert(sortedBlocks, {name = blockName, count = blockCount})
+        end
+
+        -- Sort by count in descending order.
+        table.sort(sortedBlocks, function(a, b)
+            return a.count > b.count
+        end)
+
+        for i = 1, 5 do
+            if sortedBlocks[i] then
+                print(sortedBlocks[i].name .. ": " .. sortedBlocks[i].count)
+            end
+        end
     end
 
     -- Iterate through the chunk and scan for blocks.
@@ -45,6 +74,12 @@ if geoscanner then
                 if blockData then
                     local blockName = blockData.name
                     local blockAmount = blockData.count
+
+                    -- Update block counts.
+                    if not blockCounts[blockName] then
+                        blockCounts[blockName] = 0
+                    end
+                    blockCounts[blockName] = blockCounts[blockName] + blockAmount
 
                     -- Write block information to the file.
                     file.writeLine("Block: " .. blockName)
