@@ -57,7 +57,6 @@ if blockData then
     end
 
     -- Update the AR goggles display
-    arController.display()
 else
     print("Scan failed: " .. errorMessage)
 end
