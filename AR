@@ -15,11 +15,11 @@ local function drawMenu()
   end
 
   display.clear()
-  display.setCursorPos(1, 1)
+ 
   display.write("AR Goggles Menu")
 
   for i, script in ipairs(scripts) do
-    display.setCursorPos(1, i + 2)
+
     if i == selectedOption then
       display.write("> " .. script.name)
     else
