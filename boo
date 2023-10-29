@@ -20,10 +20,8 @@ if blockData then
     for _, blockInfo in pairs(blockData) do
         local blockName = blockInfo.name
 
-        -- Check if the block name contains any of the specified keywords
-        if string.find(blockName, "diamond") or
-           string.find(blockName, "emerald") or
-           string.find(blockName, "ancient") then
+        -- Check if the block name contains the word "Ore"
+        if string.find(blockName, "Ore") then
             table.insert(oreData, {
                 name = blockName,
                 x = blockInfo.x,
@@ -36,27 +34,17 @@ if blockData then
     -- Clear the AR goggles display
     arController.clear()
 
-    -- Display ore data on the AR goggles with increased spacing and coloring
+    -- Display ore data on the AR goggles with increased spacing
     local yPosition = 1
 
     for _, oreInfo in pairs(oreData) do
-        local color = 0xFFFFFF -- Default color
-
-        if string.find(oreInfo.name, "diamond") then
-            color = 0x99CCFF -- Light Blue for diamond
-        elseif string.find(oreInfo.name, "emerald") then
-            color = 0x00FF00 -- Lime for emerald
-        elseif string.find(oreInfo.name, "ancient") then
-            color = 0xFFA500 -- Orange for ancient
-        end
-
-        arController.drawString("Ore: " .. oreInfo.name, 1, yPosition, color)
-        arController.drawString("Location: X=" .. oreInfo.x .. ", Y=" .. oreInfo.y .. ", Z=" .. oreInfo.z, 1, yPosition + 1, color)
+        arController.drawString("Ore: " .. oreInfo.name, 1, yPosition, 0xFFFFFF)
+        arController.drawString("Location: X=" .. oreInfo.x .. ", Y=" .. oreInfo.y .. ", Z=" .. oreInfo.z, 1, yPosition + 1, 0xFFFFFF)
         arController.drawString("-----------------------", 1, yPosition + 2, 0xFFFFFF)
         yPosition = yPosition + 4
     end
 
-    -- Update the AR goggles display
+    -- You can choose to add a manual display function here if needed.
 else
     print("Scan failed: " .. errorMessage)
 end
