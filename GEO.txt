@@ -1,10 +1,10 @@
 -- Initialize the Geoscanner peripheral.
-local geoscanner = peripheral.find("geoscanner")
+local geoscanner = peripheral.wrap("right")
 
 if geoscanner then
     -- Define the coordinates of the current chunk.
     local chunkX, chunkZ = math.floor(gps.locate())
-    local minY, maxY = 1, 16  -- Adjust the Y-level range as needed.
+    local minY, maxY = -20, 30  -- Set the Y-level range from -20 to 30.
 
     -- Create a table to store ore information.
     local ores = {}
@@ -23,6 +23,14 @@ if geoscanner then
         local progressBar = "[" .. string.rep("=", progressChars) .. string.rep(" ", barLength - progressChars) .. "]"
         print("Scanning Progress: " .. progressBar)
     end
+
+    -- Delete the existing "ORES.txt" file if it exists.
+    if fs.exists("ORES.txt") then
+        fs.delete("ORES.txt")
+    end
+
+    -- Create and open the "ORES.txt" file for writing.
+    local file = fs.open("ORES.txt", "w")
 
     -- Iterate through the chunk and scan for ores.
     for y = minY, maxY do
@@ -44,20 +52,25 @@ if geoscanner then
                         y = y,
                         z = chunkZ * 16 + z
                     })
+
+                    -- Write ore information to the file.
+                    file.writeLine("Ore: " .. oreName)
+                    file.writeLine("Count: " .. oreCount)
+                    file.writeLine("Coordinates: X=" .. ore.x .. " Y=" .. ore.y .. " Z=" .. ore.z)
+                    file.writeLine("--------")
                 end
             end
         end
     end
 
-    -- Clear the progress bar and display the ore information.
+    -- Close the file.
+    file.close()
+
+    -- Clear the progress bar.
     term.clear()
     term.setCursorPos(1, 1)
-    for _, ore in ipairs(ores) do
-        print("Ore: " .. ore.name)
-        print("Count: " .. ore.count)
-        print("Coordinates: X=" .. ore.x .. " Y=" .. ore.y .. " Z=" .. ore.z)
-        print("--------")
-    end
+
+    print("Scan results saved to 'ORES.txt'")
 else
     print("Geoscanner not found.")
 end
