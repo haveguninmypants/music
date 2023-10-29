@@ -1,5 +1,5 @@
 -- Initialize the Geoscanner peripheral.
-local geoscanner = peripheral.wrap("right")
+local geoscanner = peripheral.find("geoscanner")
 
 if geoscanner then
     -- Define the coordinates of the current chunk.
@@ -13,6 +13,10 @@ if geoscanner then
     local totalBlocks = (maxY - minY + 1) * 16 * 16
     local scannedBlocks = 0
 
+    -- Initialize time variables.
+    local startTime = os.time()
+    local timeElapsed = 0
+
     -- Create a function to update the progression bar.
     local function updateProgress()
         term.clear()
@@ -22,6 +26,12 @@ if geoscanner then
         local progressChars = math.floor(barLength * progress)
         local progressBar = "[" .. string.rep("=", progressChars) .. string.rep(" ", barLength - progressChars) .. "]"
         print("Scanning Progress: " .. progressBar)
+
+        -- Calculate the estimated time needed.
+        timeElapsed = os.time() - startTime
+        local timeRemaining = timeElapsed / progress / 60
+        print("Blocks Scanned: " .. scannedBlocks .. " / " .. totalBlocks)
+        print("Estimated Time Remaining: " .. math.floor(timeRemaining) .. " minutes")
     end
 
     -- Delete the existing "ORES.txt" file if it exists.
