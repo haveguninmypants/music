@@ -2,7 +2,7 @@
 local geoscanner = peripheral.wrap("right")
 
 -- Define the Y-level to scan (e.g., 10 for Y = 10)
-local scanY = 10
+local scanY = 77
 
 -- Output a message to the terminal
 print("Scanning layer at Y = " .. scanY)
