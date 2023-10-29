@@ -41,9 +41,9 @@ if geoscanner then
             print(blockName .. ": " .. blockCount)
         end
 
-        -- List the top 5 most common blocks.
+        -- List the top 3 blocks if there are at least 3 types.
         term.setCursorPos(1, 13)
-        print("Top 5 Blocks:")
+        print("Top Blocks:")
         local sortedBlocks = {}
         for blockName, blockCount in pairs(blockCounts) do
             table.insert(sortedBlocks, {name = blockName, count = blockCount})
@@ -54,10 +54,10 @@ if geoscanner then
             return a.count > b.count
         end)
 
-        for i = 1, 5 do
-            if sortedBlocks[i] then
-                print(sortedBlocks[i].name .. ": " .. sortedBlocks[i].count)
-            end
+        local numTopBlocks = math.min(#sortedBlocks, 3)  -- Show the top 3 or fewer if there are fewer types.
+
+        for i = 1, numTopBlocks do
+            print(sortedBlocks[i].name .. ": " .. sortedBlocks[i].count)
         end
     end
 
