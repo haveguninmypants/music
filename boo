@@ -14,6 +14,14 @@ if geoscanner then
     local totalBlocks = (maxY - minY + 1) * 16 * 16
     local scannedBlocks = 0
 
+    -- Delete the existing "boo.txt" file if it exists.
+    if fs.exists("boo.txt") then
+        fs.delete("boo.txt")
+    end
+
+    -- Open the "boo.txt" file for writing.
+    local file = fs.open("boo.txt", "w")
+
     -- Create a function to update the progression bar.
     local function updateProgress()
         term.clear()
@@ -47,25 +55,24 @@ if geoscanner then
                     end
                     blockCounts[blockName] = blockCounts[blockName] + blockAmount
 
-                    -- Display block information in real-time.
-                    term.setCursorPos(1, 4)
-                    term.clearLine()
-                    print("Scanning Block: X=" .. chunkX * 16 + x .. " Y=" .. y .. " Z=" .. chunkZ * 16 + z)
-                    print("Block: " .. blockName)
-                    print("Amount: " .. blockAmount)
+                    -- Write block information to the "boo.txt" file.
+                    file.writeLine("Scanning Block: X=" .. chunkX * 16 + x .. " Y=" .. y .. " Z=" .. chunkZ * 16 + z)
+                    file.writeLine("Block: " .. blockName)
+                    file.writeLine("Amount: " .. blockAmount)
+                    file.writeLine("--------")
                 end
             end
         end
     end
 
+    -- Close the file.
+    file.close()
+
     -- Display a completion message with block counts.
     term.clear()
     term.setCursorPos(1, 1)
     print("Scanning completed.")
-    print("Block Counts:")
-    for blockName, blockCount in pairs(blockCounts) do
-        print(blockName .. ": " .. blockCount)
-    end
+    print("Block information saved to 'boo.txt'")
 else
     -- Display a message if the Geoscanner is not found.
     print("Geoscanner not found.")
