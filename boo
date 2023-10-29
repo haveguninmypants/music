@@ -21,7 +21,7 @@ if blockData then
         local blockName = blockInfo.name
 
         -- Check if the block name contains the word "Ore"
-        if string.find(blockName, "Ore") then
+        if string.find(blockName, "ore") then
             table.insert(oreData, {
                 name = blockName,
                 x = blockInfo.x,
