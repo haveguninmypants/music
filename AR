@@ -8,15 +8,22 @@ local scripts = {
 local selectedOption = 1
 
 local function drawMenu()
-  term.clear()
-  term.setCursorPos(1, 1)
-  print("AR Goggles Menu")
+  -- Wrap the AR Goggles' display peripheral on the left side.
+  local display = peripheral.wrap("left")
+  if not display then
+    error("AR Goggles display not found.")
+  end
+
+  display.clear()
+  display.setCursorPos(1, 1)
+  display.write("AR Goggles Menu")
 
   for i, script in ipairs(scripts) do
+    display.setCursorPos(1, i + 2)
     if i == selectedOption then
-      print("> " .. script.name)
+      display.write("> " .. script.name)
     else
-      print("  " .. script.name)
+      display.write("  " .. script.name)
     end
   end
 end
@@ -39,7 +46,6 @@ while true do
   end
 end
 
--- Clear the screen after exiting the menu
-term.clear()
-term.setCursorPos(1, 1)
-print("Menu closed.")
+-- Clear the AR Goggles display after exiting the menu
+local display = peripheral.wrap("left")
+display.clear()
