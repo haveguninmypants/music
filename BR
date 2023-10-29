@@ -1,51 +1,23 @@
--- Sample AR Goggles Menu
-local scripts = {
-  { name = "Script 1", path = "script1.lua" },
-  { name = "Script 2", path = "script2.lua" },
-  { name = "Script 3", path = "script3.lua" },
-}
+-- Wrap the Geoscanner peripheral on the right side
+local geoscanner = peripheral.wrap("right")
 
-local selectedOption = 1
+-- Define the Y-level to scan (e.g., 10 for Y = 10)
+local scanY = 10
 
-local function drawMenu()
-  -- Wrap the AR Goggles' display peripheral on the left side.
-  local display = peripheral.wrap("left")
-  if not display then
-    error("AR Goggles display not found.")
-  end
+-- Output a message to the terminal
+print("Scanning layer at Y = " .. scanY)
 
-  display.clear()
- 
-  display.write("AR Goggles Menu")
+-- Use chunkAnalyze to get ore data
+local oreData, errorMessage = geoscanner.chunkAnalyze()
 
-  for i, script in ipairs(scripts) do
-
-    if i == selectedOption then
-      display.write("> " .. script.name)
-    else
-      display.write("  " .. script.name)
+if oreData then
+    for oreName, oreCount in pairs(oreData) do
+        print("Ore: " .. oreName .. ", Count: " .. oreCount)
+        for i = 1, oreCount do
+            local x, y, z = geoscanner.find(oreName)
+            print("Location: X=" .. x .. ", Y=" .. y .. ", Z=" .. z)
+        end
     end
-  end
+else
+    print("Analyze failed: " .. errorMessage)
 end
-
-while true do
-  drawMenu()
-  local _, key = os.pullEvent("key")
-
-  if key == keys.up and selectedOption > 1 then
-    selectedOption = selectedOption - 1
-  elseif key == keys.down and selectedOption < #scripts then
-    selectedOption = selectedOption + 1
-  elseif key == keys.enter then
-    -- Execute the selected script
-    local script = scripts[selectedOption]
-    shell.run(script.path)
-  elseif key == keys.q then
-    -- Exit the menu (press 'q' to quit)
-    break
-  end
-end
-
--- Clear the AR Goggles display after exiting the menu
-local display = peripheral.wrap("left")
-display.clear()
