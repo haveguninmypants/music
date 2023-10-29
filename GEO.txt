@@ -1,5 +1,5 @@
 -- Initialize the Geoscanner peripheral.
-local geoscanner = peripheral.find("geoscanner")
+local geoscanner = peripheral.find("geoScanner")
 
 if geoscanner then
     -- Define the coordinates of the current chunk.
