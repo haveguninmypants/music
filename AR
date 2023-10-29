@@ -1,19 +1,12 @@
 -- Wrap the Geoscanner peripheral on the right side
 local geoscanner = peripheral.wrap("right")
 
--- Define the Y-level to scan (e.g., 10 for Y = 10)
-local scanY = 10
-
--- Output a message to the terminal
-print("Scanning layer at Y = " .. scanY)
-
 -- Use chunkAnalyze to get ore data
 local oreData, errorMessage = geoscanner.chunkAnalyze()
 
 if oreData then
-    for oreName, oreCount in pairs(oreData) do
-        print("Ore: " .. oreName .. ", Count: " .. oreCount)
-    end
+    print("Ore Data Table:")
+    print(textutils.serialize(oreData))
 else
     print("Analyze failed: " .. errorMessage)
 end
