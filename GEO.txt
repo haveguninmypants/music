@@ -1,5 +1,5 @@
 -- Initialize the Geoscanner peripheral.
-local geoscanner = peripheral.find("geoScanner")
+local geoscanner = peripheral.find("geoscanner")
 
 if geoscanner then
     -- Define the coordinates of the current chunk.
@@ -9,11 +9,28 @@ if geoscanner then
     -- Create a table to store ore information.
     local ores = {}
 
+    -- Initialize progress variables.
+    local totalBlocks = (maxY - minY + 1) * 16 * 16
+    local scannedBlocks = 0
+
+    -- Create a function to update the progression bar.
+    local function updateProgress()
+        term.clear()
+        term.setCursorPos(1, 1)
+        local progress = scannedBlocks / totalBlocks
+        local barLength = 20
+        local progressChars = math.floor(barLength * progress)
+        local progressBar = "[" .. string.rep("=", progressChars) .. string.rep(" ", barLength - progressChars) .. "]"
+        print("Scanning Progress: " .. progressBar)
+    end
+
     -- Iterate through the chunk and scan for ores.
     for y = minY, maxY do
         for x = 1, 16 do
             for z = 1, 16 do
                 local blockData = geoscanner.scan(x, y, z)
+                scannedBlocks = scannedBlocks + 1
+                updateProgress()
 
                 if blockData and blockData.state == "ore" then
                     local oreName = blockData.name
@@ -32,7 +49,9 @@ if geoscanner then
         end
     end
 
-    -- Display the ore information.
+    -- Clear the progress bar and display the ore information.
+    term.clear()
+    term.setCursorPos(1, 1)
     for _, ore in ipairs(ores) do
         print("Ore: " .. ore.name)
         print("Count: " .. ore.count)
