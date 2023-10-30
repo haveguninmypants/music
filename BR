@@ -1,50 +1,48 @@
--- Wrap the Geoscanner peripheral on the right side
-local geoscanner = peripheral.wrap("right")
+-- Find the Chat Box and Inventory Manager peripherals
+local chatBox = peripheral.wrap("left")
+local inventoryManager = peripheral.wrap("right_inventory_manager") -- Specify the peripheral name for the Inventory Manager
 
--- Wrap the AR goggles controller peripheral on the left side
-local arController = peripheral.wrap("left")
+-- Get the owner of the Inventory Manager as a whitelisted player
+local owner = inventoryManager.getOwner()
 
--- Define the scan radius (e.g., 16 for a 16-block radius)
-local scanRadius = 16
+if owner then
+    -- You can treat the owner as a whitelisted player
+    local whitelistedPlayer = owner
+    print("Whitelisted Player: " .. whitelistedPlayer)
 
--- Output a message to the terminal
-print("Scanning a radius of " .. scanRadius)
+    -- Find the connected inventory on the top side (e.g., a chest)
+    local connectedInventory = peripheral.wrap("top")
 
--- Use scan to get block data
-local blockData, errorMessage = geoscanner.scan(scanRadius)
+    -- Listen for chat events
+    while true do
+        local event, username, message, _, _ = os.pullEvent("chat")
 
-if blockData then
-    -- Create a table to store the ore data
-    local oreData = {}
+        -- Check if the message is from a whitelisted player
+        if username == whitelistedPlayer then
+            -- Check if the message matches the specified format [item, amount]
+            local itemPattern = "%[(.-),%s*(%d+)%]"
+            local itemName, itemAmount = message:match(itemPattern)
 
-    for _, blockInfo in pairs(blockData) do
-        local blockName = blockInfo.name
+            if itemName and itemAmount then
+                print("Received item request from whitelisted player " .. username)
+                print("Item Name: " .. itemName)
+                print("Item Amount: " .. itemAmount)
 
-        -- Check if the block name contains the word "Ore"
-        if string.find(blockName, "diamond_ore") then
-            table.insert(oreData, {
-                name = blockName,
-                x = blockInfo.x,
-                y = blockInfo.y,
-                z = blockInfo.z
-            })
+                if connectedInventory then
+                    -- Attempt to add items to the player's inventory through the Inventory Manager
+                    local addedAmount = inventoryManager.addItemToPlayer("up", tonumber(itemAmount), nil, itemName)
+
+                    if addedAmount > 0 then
+                        chatBox.sendMessageToPlayer("Added " .. addedAmount .. " " .. itemName .. " to your inventory.", username)
+                    else
+                        chatBox.sendMessageToPlayer("Failed to add the item to your inventory.", username)
+                    end
+                else
+                    chatBox.sendMessageToPlayer("No connected inventory found.", username)
+                end
+            end
         end
     end
-
-    -- Clear the AR goggles display
-    arController.clear()
-
-    -- Display ore data on the AR goggles with increased spacing
-    local yPosition = 1
-
-    for _, oreInfo in pairs(oreData) do
-        arController.drawString("Ore: " .. oreInfo.name, 1, yPosition, 0xFFFFFF)
-        arController.drawString("Location: X=" .. oreInfo.x .. ", Y=" .. oreInfo.y .. ", Z=" .. oreInfo.z, 1, yPosition + 1, 0xFFFFFF)
-        arController.drawString("-----------------------", 1, yPosition + 2, 0xFFFFFF)
-        yPosition = yPosition + 4
-    end
-
-    -- You can choose to add a manual display function here if needed.
 else
-    print("Scan failed: " .. errorMessage)
+    print("No owner found for the Inventory Manager.")
 end
