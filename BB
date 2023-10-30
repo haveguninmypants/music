@@ -1,0 +1,51 @@
+-- Find the Chat Box and Inventory Manager peripherals
+local chatBox = peripheral.wrap("left")
+local inventoryManager = peripheral.wrap("right")
+
+-- Get the owner of the Inventory Manager as a whitelisted player
+local owner = inventoryManager.getOwner()
+
+if owner then
+    -- You can treat the owner as a whitelisted player
+    local whitelistedPlayer = owner
+    print("Whitelisted Player: " .. whitelistedPlayer)
+
+    -- Find the connected inventory on the top side (e.g., a chest)
+    local connectedInventory = peripheral.wrap("top")
+
+    -- Listen for chat events
+    while true do
+        local event, username, message, _, _ = os.pullEvent("chat")
+
+        -- Check if the message is from a whitelisted player
+        if username == whitelistedPlayer then
+            -- Check if the message matches the specified format [item, amount]
+            local itemPattern = "%[(.-),%s*(%d+)%]"
+            local itemName, itemAmount = message:match(itemPattern)
+
+            if itemName and itemAmount then
+                print("Received item request from whitelisted player " .. username)
+                print("Item Name: " .. itemName)
+                print("Item Amount: " .. itemAmount)
+
+                if connectedInventory then
+                    local itemLimit = connectedInventory.getItemLimit(1) -- Assuming slot 1
+                    local transferAmount = math.min(tonumber(itemAmount), itemLimit)
+
+                    -- Push items from the connected inventory to the Inventory Manager
+                    local transferredAmount = connectedInventory.pushItems(peripheral.getName(inventoryManager), 1, transferAmount)
+
+                    if transferredAmount > 0 then
+                        chatBox.sendMessageToPlayer("Added " .. transferredAmount .. " " .. itemName .. " to your inventory.", username)
+                    else
+                        chatBox.sendMessageToPlayer("Failed to add the item to your inventory.", username)
+                    end
+                else
+                    chatBox.sendMessageToPlayer("No connected inventory found.", username)
+                end
+            end
+        end
+    end
+else
+    print("No owner found for the Inventory Manager.")
+end
