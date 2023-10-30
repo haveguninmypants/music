@@ -1,6 +1,6 @@
 -- Find the Chat Box and Inventory Manager peripherals
 local chatBox = peripheral.wrap("left")
-local inventoryManager = peripheral.wrap("right_inventory_manager") -- Specify the peripheral name for the Inventory Manager
+local inventoryManager = peripheral.wrap("right") -- Specify the peripheral name for the Inventory Manager
 
 -- Get the owner of the Inventory Manager as a whitelisted player
 local owner = inventoryManager.getOwner()
