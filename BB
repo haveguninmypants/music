@@ -1,51 +1,161 @@
--- Find the Chat Box and Inventory Manager peripherals
-local chatBox = peripheral.wrap("left")
-local inventoryManager = peripheral.wrap("right")
+local monitor = peripheral.wrap("back") -- Wrap the monitor peripheral on the back
 
--- Get the owner of the Inventory Manager as a whitelisted player
-local owner = inventoryManager.getOwner()
+if monitor then
+    monitor.clear()
+    monitor.setTextScale(0.5)  -- Set a small text scale
+    monitor.setCursorPos(1, 1)
+    monitor.write("Select a Citizen:")
+    
+    -- Wrap the Colony Integrator peripheral on the right
+    local colonyIntegrator = peripheral.wrap("right")
 
-if owner then
-    -- You can treat the owner as a whitelisted player
-    local whitelistedPlayer = owner
-    print("Whitelisted Player: " .. whitelistedPlayer)
+    if colonyIntegrator then
+        local citizens = colonyIntegrator.getCitizens()
+        if citizens and #citizens > 0 then
+            local selectedCitizenIndex = 1
+            local totalPages = math.ceil(#citizens / 5)
+            local currentPage = 1
+            local pageStart = 1
+            local pageEnd = math.min(#citizens, pageStart + 4)
 
-    -- Find the connected inventory on the top side (e.g., a chest)
-    local connectedInventory = peripheral.wrap("top")
-
-    -- Listen for chat events
-    while true do
-        local event, username, message, _, _ = os.pullEvent("chat")
-
-        -- Check if the message is from a whitelisted player
-        if username == whitelistedPlayer then
-            -- Check if the message matches the specified format [item, amount]
-            local itemPattern = "%[(.-),%s*(%d+)%]"
-            local itemName, itemAmount = message:match(itemPattern)
-
-            if itemName and itemAmount then
-                print("Received item request from whitelisted player " .. username)
-                print("Item Name: " .. itemName)
-                print("Item Amount: " .. itemAmount)
-
-                if connectedInventory then
-                    local itemLimit = connectedInventory.getItemLimit(1) -- Assuming slot 1
-                    local transferAmount = math.min(tonumber(itemAmount), itemLimit)
-
-                    -- Push items from the connected inventory to the Inventory Manager
-                    local transferredAmount = connectedInventory.pushItems(peripheral.getName(inventoryManager), 1, transferAmount)
-
-                    if transferredAmount > 0 then
-                        chatBox.sendMessageToPlayer("Added " .. transferredAmount .. " " .. itemName .. " to your inventory.", username)
+            local function drawCitizenList()
+                monitor.clear()
+                monitor.setCursorPos(1, 1)
+                monitor.write("Select a Citizen:")
+                
+                for i = pageStart, pageEnd do
+                    monitor.setCursorPos(1, i - pageStart + 2)
+                    local citizenName = citizens[i].name
+                    if i == selectedCitizenIndex then
+                        monitor.setTextColor(colors.blue)
+                        monitor.write("[!] " .. citizenName)
+                        monitor.setTextColor(colors.white)
                     else
-                        chatBox.sendMessageToPlayer("Failed to add the item to your inventory.", username)
+                        monitor.write("    " .. citizenName)
                     end
-                else
-                    chatBox.sendMessageToPlayer("No connected inventory found.", username)
                 end
+
+                monitor.setCursorPos(1, 9)
+                monitor.write("Page " .. currentPage .. "/" .. totalPages)
             end
+
+            drawCitizenList()
+
+            while true do
+                local event, param1, param2, param3 = os.pullEvent()
+                if event == "key" then
+                    if param1 == keys.up and selectedCitizenIndex > 1 then
+                        selectedCitizenIndex = selectedCitizenIndex - 1
+                        if selectedCitizenIndex < pageStart then
+                            pageStart = pageStart - 1
+                            pageEnd = pageEnd - 1
+                        end
+                    elseif param1 == keys.down and selectedCitizenIndex < #citizens then
+                        selectedCitizenIndex = selectedCitizenIndex + 1
+                        if selectedCitizenIndex > pageEnd then
+                            pageStart = pageStart + 1
+                            pageEnd = pageEnd + 1
+                        end
+                    elseif param1 == keys.enter then
+                        -- Open the citizen's details
+                        local selectedCitizen = citizens[selectedCitizenIndex]
+                        while true do
+                            monitor.clear()
+                            monitor.setCursorPos(1, 1)
+                            monitor.write("Citizen: " .. selectedCitizen.name)
+                            
+                            local tabs = {"Stats", "Request", "Work", "Exit"}
+                            local selectedTabIndex = 1
+                            local tabHeight = 2
+
+                            local function drawTabs()
+                                for i, tab in ipairs(tabs) do
+                                    monitor.setCursorPos(2, i + tabHeight)
+                                    if i == selectedTabIndex then
+                                        monitor.setTextColor(colors.blue)
+                                        monitor.write(tab)
+                                        monitor.setTextColor(colors.white)
+                                    else
+                                        monitor.write(tab)
+                                    end
+                                end
+                            end
+
+                            drawTabs()
+                            
+                            local function drawStats()
+                                monitor.setCursorPos(1, 4 + tabHeight)
+                                monitor.write("Age: " .. selectedCitizen.age)
+                                monitor.setCursorPos(1, 5 + tabHeight)
+                                monitor.write("Gender: " .. selectedCitizen.gender)
+                                -- Add more citizen stats here
+                            end
+
+                            local function drawRequests()
+                                monitor.setCursorPos(1, 4 + tabHeight)
+                                if selectedCitizen.isAsleep then
+                                    monitor.write("Status: Asleep")
+                                else
+                                    monitor.write("Status: Awake")
+                                end
+                                monitor.setCursorPos(1, 5 + tabHeight)
+                                monitor.write("Happiness: " .. selectedCitizen.happiness)
+                                -- Add more request-related info here
+                            end
+
+                            local function drawWork()
+                                monitor.setCursorPos(1, 4 + tabHeight)
+                                if selectedCitizen.isIdle then
+                                    monitor.write("Status: Idle")
+                                else
+                                    monitor.write("Status: Working")
+                                end
+                                monitor.setCursorPos(1, 5 + tabHeight)
+                                monitor.write("Work Location: " .. selectedCitizen.location.x .. ", " .. selectedCitizen.location.y .. ", " .. selectedCitizen.location.z)
+                                -- Add more work-related info here
+                            end
+
+                            drawStats()
+
+                            while true do
+                                local event, param1, param2, param3 = os.pullEvent()
+                                if event == "key" then
+                                    if param1 == keys.up and selectedTabIndex > 1 then
+                                        selectedTabIndex = selectedTabIndex - 1
+                                    elseif param1 == keys.down and selectedTabIndex < #tabs then
+                                        selectedTabIndex = selectedTabIndex + 1
+                                    elseif param1 == keys.enter then
+                                        if selectedTabIndex == #tabs then
+                                            break
+                                        elseif selectedTabIndex == 1 then
+                                            drawStats()
+                                        elseif selectedTabIndex == 2 then
+                                            drawRequests()
+                                        elseif selectedTabIndex == 3 then
+                                            drawWork()
+                                        end
+                                        drawTabs()
+                                    end
+                                end
+                            end
+
+                            drawCitizenList()
+
+                            break
+                        end
+                    end
+                end
+
+                drawCitizenList()
+            end
+        else
+            monitor.setCursorPos(1, 2)
+            monitor.write("No citizens found.")
         end
+    else
+        monitor.setCursorPos(1, 2)
+        monitor.write("Colony Integrator not found on the right.")
     end
 else
-    print("No owner found for the Inventory Manager.")
+    print("Monitor not found on the back.")
 end
