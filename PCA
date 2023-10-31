@@ -1,0 +1,26 @@
+local colonyIntegrator = peripheral.wrap("back")
+local terminal = peripheral.find("terminal")
+
+if not colonyIntegrator or not terminal then
+  error("Colony Integrator or terminal not found.")
+end
+
+while true do
+  term.clear()
+  term.setCursorPos(1, 1)
+  local requests = colonyIntegrator.getRequests()
+  if requests and #requests > 0 then
+    for i, request in ipairs(requests) do
+      term.write("Requester: " .. request.name:sub(1, 15))
+      term.setCursorPos(1, i * 3)
+      term.write("Item: " .. request.items[1].displayName:sub(1, 15))
+      term.setCursorPos(1, i * 3 + 1)
+      term.write("Amount: " .. request.items[1].count)
+      term.setCursorPos(1, i * 3 + 2)
+      term.write("Location: " .. request.target.x .. ", " .. request.target.y .. ", " .. request.target.z)
+    end
+  else
+    term.write("No requests.")
+  end
+  sleep(5) -- Wait for 5 seconds before updating again
+end
