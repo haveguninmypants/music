@@ -1,51 +1,158 @@
--- Wrap the monitor peripheral on the back
-local monitor = peripheral.wrap("back")
+local monitor = peripheral.wrap("back") -- Wrap the monitor peripheral on the back
 
 if monitor then
-    monitor.setTextScale(1)
     monitor.clear()
-    monitor.setCursorPos(2, 2)
-    monitor.write("Colony Requests:")
-    monitor.setCursorPos(2, 4)
-
-    -- Wrap the Colony Integrator peripheral
+    monitor.setTextScale(0.5)  -- Set a small text scale
+    monitor.setCursorPos(1, 1)
+    monitor.write("Select a Citizen:")
+    
+    -- Wrap the Colony Integrator peripheral on the right
     local colonyIntegrator = peripheral.wrap("right")
 
     if colonyIntegrator then
-        local requests = colonyIntegrator.getRequests()
-        if requests and #requests > 0 then
-            for i, request in ipairs(requests) do
-                monitor.setCursorPos(2, 5 + i)
-                monitor.write("Request ID: " .. request.id)
-                monitor.setCursorPos(2, 6 + i)
-                monitor.write("Request Name: " .. request.name)
-                monitor.setCursorPos(2, 7 + i)
-                monitor.write("Request Description: " .. request.desc)
-                monitor.setCursorPos(2, 8 + i)
-                monitor.write("Request State: " .. request.state)
-                monitor.setCursorPos(2, 9 + i)
-                monitor.write("Request Count: " .. request.count)
-                monitor.setCursorPos(2, 10 + i)
-                monitor.write("Request Target: " .. request.target)
-                monitor.setCursorPos(2, 11 + i)
-                monitor.write("Requested Items:")
+        local citizens = colonyIntegrator.getCitizens()
+        if citizens and #citizens > 0 then
+            local selectedCitizenIndex = 1
+            local totalPages = math.ceil(#citizens / 5)
+            local currentPage = 1
+            local pageStart = 1
+            local pageEnd = math.min(#citizens, pageStart + 4)
 
-                if request.items and #request.items > 0 then
-                    for j, item in ipairs(request.items) do
-                        monitor.setCursorPos(2, 12 + i + j)
-                        monitor.write("- " .. item.displayName .. " x" .. item.count)
+            local function drawCitizenList()
+                monitor.clear()
+                monitor.setCursorPos(1, 1)
+                monitor.write("Select a Citizen:")
+                
+                for i = pageStart, pageEnd do
+                    monitor.setCursorPos(1, i - pageStart + 2)
+                    local citizenName = citizens[i].name
+                    if i == selectedCitizenIndex then
+                        monitor.write("[!] " .. citizenName)
+                    else
+                        monitor.write("    " .. citizenName)
                     end
-                else
-                    monitor.setCursorPos(2, 12 + i)
-                    monitor.write("- No items requested")
                 end
+
+                monitor.setCursorPos(1, 9)
+                monitor.write("Page " .. currentPage .. "/" .. totalPages)
+            end
+
+            drawCitizenList()
+
+            while true do
+                local event, param1, param2, param3 = os.pullEvent()
+                if event == "key" then
+                    if param1 == keys.up and selectedCitizenIndex > 1 then
+                        selectedCitizenIndex = selectedCitizenIndex - 1
+                        if selectedCitizenIndex < pageStart then
+                            pageStart = pageStart - 1
+                            pageEnd = pageEnd - 1
+                        end
+                    elseif param1 == keys.down and selectedCitizenIndex < #citizens then
+                        selectedCitizenIndex = selectedCitizenIndex + 1
+                        if selectedCitizenIndex > pageEnd then
+                            pageStart = pageStart + 1
+                            pageEnd = pageEnd + 1
+                        end
+                    elseif param1 == keys.enter then
+                        -- Open the citizen's details
+                        local selectedCitizen = citizens[selectedCitizenIndex]
+                        while true do
+                            monitor.clear()
+                            monitor.setCursorPos(1, 1)
+                            monitor.write("Citizen: " .. selectedCitizen.name)
+                            
+                            local tabs = {"Stats", "Request", "Work", "Exit"}
+                            local selectedTabIndex = 1
+                            local tabHeight = 2
+
+                            local function drawTabs()
+                                for i, tab in ipairs(tabs) do
+                                    monitor.setCursorPos(2, i + tabHeight)
+                                    if i == selectedTabIndex then
+                                        monitor.setTextColor(colors.blue)
+                                        monitor.write(tab)
+                                        monitor.setTextColor(colors.white)
+                                    else
+                                        monitor.write(tab)
+                                    end
+                                end
+                            end
+
+                            drawTabs()
+                            
+                            local function drawStats()
+                                monitor.setCursorPos(1, 4 + tabHeight)
+                                monitor.write("Age: " .. selectedCitizen.age)
+                                monitor.setCursorPos(1, 5 + tabHeight)
+                                monitor.write("Gender: " .. selectedCitizen.gender)
+                                -- Add more citizen stats here
+                            end
+
+                            local function drawRequests()
+                                monitor.setCursorPos(1, 4 + tabHeight)
+                                if selectedCitizen.isAsleep then
+                                    monitor.write("Status: Asleep")
+                                else
+                                    monitor.write("Status: Awake")
+                                end
+                                monitor.setCursorPos(1, 5 + tabHeight)
+                                monitor.write("Happiness: " .. selectedCitizen.happiness)
+                                -- Add more request-related info here
+                            end
+
+                            local function drawWork()
+                                monitor.setCursorPos(1, 4 + tabHeight)
+                                if selectedCitizen.isIdle then
+                                    monitor.write("Status: Idle")
+                                else
+                                    monitor.write("Status: Working")
+                                end
+                                monitor.setCursorPos(1, 5 + tabHeight)
+                                monitor.write("Work Location: " .. selectedCitizen.location.x .. ", " .. selectedCitizen.location.y .. ", " .. selectedCitizen.location.z)
+                                -- Add more work-related info here
+                            end
+
+                            drawStats()
+
+                            while true do
+                                local event, param1, param2, param3 = os.pullEvent()
+                                if event == "key" then
+                                    if param1 == keys.up and selectedTabIndex > 1 then
+                                        selectedTabIndex = selectedTabIndex - 1
+                                    elseif param1 == keys.down and selectedTabIndex < #tabs then
+                                        selectedTabIndex = selectedTabIndex + 1
+                                    elseif param1 == keys.enter then
+                                        if selectedTabIndex == #tabs then
+                                            break
+                                        elseif selectedTabIndex == 1 then
+                                            drawStats()
+                                        elseif selectedTabIndex == 2 then
+                                            drawRequests()
+                                        elseif selectedTabIndex == 3 then
+                                            drawWork()
+                                        end
+                                        drawTabs()
+                                    end
+                                end
+                            end
+
+                            drawCitizenList()
+
+                            break
+                        end
+                    end
+                end
+
+                drawCitizenList()
             end
         else
-            monitor.setCursorPos(2, 5)
-            monitor.write("No colony requests found.")
+            monitor.setCursorPos(1, 2)
+            monitor.write("No citizens found.")
         end
     else
-        print("Colony Integrator not found on the right.")
+        monitor.setCursorPos(1, 2)
+        monitor.write("Colony Integrator not found on the right.")
     end
 else
     print("Monitor not found on the back.")
