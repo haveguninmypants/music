@@ -11,10 +11,10 @@ while true do
   
   if requests and #requests > 0 then
     for i, request in ipairs(requests) do
-      term.write("Requester: " .. request.name:sub(1, 16) .. "\n")
-      term.write("Profession: " .. request.name:sub(1, 16) .. "\n")
-      term.write("Item: " .. request.items[1].displayName:sub(1, 16) .. "\n")
-      term.write("Amount: " .. request.items[1].count .. "\n\n")
+      term.write("Requester: " .. request.name:sub(1, 16))
+      term.write("Profession: " .. request.name:sub(1, 16))
+      term.write("Item: " .. request.items[1].displayName:sub(1, 16))
+      term.write("Amount: " .. request.items[1].count)
     end
   else
     term.write("No requests.")
