@@ -1,0 +1,44 @@
+-- Wrap the Colony Integrator peripheral on the back
+local colonyIntegrator = peripheral.wrap("back")
+
+-- Function to clear the terminal screen
+local function clearScreen()
+    term.clear()
+    term.setCursorPos(1, 1)
+end
+
+while true do
+    clearScreen()
+    if colonyIntegrator then
+        local requests = colonyIntegrator.getRequests()
+        if requests and #requests > 0 then
+            print("Colony Requests:")
+            print()
+
+            for _, request in ipairs(requests) do
+                print("Request ID: " .. request.id)
+                print("Request Name: " .. request.name)
+                print("Request Description: " .. request.desc)
+                print("Request State: " .. request.state)
+                print("Request Count: " .. request.count)
+                print("Request Target: " .. request.target)
+
+                print("Requested Items:")
+                if request.items and #request.items > 0 then
+                    for _, item in ipairs(request.items) do
+                        print("- " .. item.displayName .. " x" .. item.count)
+                    end
+                else
+                    print("- No items requested")
+                end
+
+                print(string.rep("-", 30))
+            end
+        else
+            print("No colony requests found.")
+        end
+    else
+        print("Colony Integrator not found on the back.")
+    end
+    sleep(60)  -- Update every 60 seconds (adjust as needed)
+end
