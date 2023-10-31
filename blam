@@ -1,24 +1,28 @@
-local colonyIntegrator = peripheral.wrap("back")
+-- Wrap the inventory manager peripheral on the right
+local inventoryManager = peripheral.wrap("right")
 
-if not colonyIntegrator then
-  error("Colony Integrator not found.")
+-- Wrap the chest peripheral on top of the computer
+local chest = peripheral.wrap("up")
+
+-- Function to grab items from the first slot and place them in the chest
+local function grabAndStoreItem()
+    -- Grab item from the first slot of the player's inventory manager
+    local grabbedItem = inventoryManager.removeItemFromPlayer("up", 1, 1)
+
+    if grabbedItem > 0 then
+        -- Store the item in the chest above the computer
+        local itemStack = chest.pullItems("up", 1)
+        if itemStack > 0 then
+            print("Transferred " .. itemStack .. " items to the chest.")
+        else
+            print("Failed to transfer items to the chest.")
+        end
+    else
+        print("No items to grab from the first slot.")
+    end
 end
 
 while true do
-  term.clear()
-  term.setCursorPos(1, 1)
-  local requests = colonyIntegrator.getRequests()
-  
-  if requests and #requests > 0 then
-    for i, request in ipairs(requests) do
-      term.write("Requester: " .. request.name:sub(1, 16))
-      term.write("Profession: " .. request.name:sub(1, 16))
-      term.write("Item: " .. request.items[1].displayName:sub(1, 16))
-      term.write("Amount: " .. request.items[1].count)
-    end
-  else
-    term.write("No requests.")
-  end
-  
-  sleep(5) -- Wait for 5 seconds before updating again
+    grabAndStoreItem()
+    sleep(1)  -- Wait for the next iteration
 end
