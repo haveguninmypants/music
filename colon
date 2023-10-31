@@ -1,0 +1,52 @@
+-- Wrap the monitor peripheral on the back
+local monitor = peripheral.wrap("back")
+
+if monitor then
+    monitor.setTextScale(1)
+    monitor.clear()
+    monitor.setCursorPos(2, 2)
+    monitor.write("Colony Requests:")
+    monitor.setCursorPos(2, 4)
+
+    -- Wrap the Colony Integrator peripheral
+    local colonyIntegrator = peripheral.wrap("right")
+
+    if colonyIntegrator then
+        local requests = colonyIntegrator.getRequests()
+        if requests and #requests > 0 then
+            for i, request in ipairs(requests) do
+                monitor.setCursorPos(2, 5 + i)
+                monitor.write("Request ID: " .. request.id)
+                monitor.setCursorPos(2, 6 + i)
+                monitor.write("Request Name: " .. request.name)
+                monitor.setCursorPos(2, 7 + i)
+                monitor.write("Request Description: " .. request.desc)
+                monitor.setCursorPos(2, 8 + i)
+                monitor.write("Request State: " .. request.state)
+                monitor.setCursorPos(2, 9 + i)
+                monitor.write("Request Count: " .. request.count)
+                monitor.setCursorPos(2, 10 + i)
+                monitor.write("Request Target: " .. request.target)
+                monitor.setCursorPos(2, 11 + i)
+                monitor.write("Requested Items:")
+
+                if request.items and #request.items > 0 then
+                    for j, item in ipairs(request.items) do
+                        monitor.setCursorPos(2, 12 + i + j)
+                        monitor.write("- " .. item.displayName .. " x" .. item.count)
+                    end
+                else
+                    monitor.setCursorPos(2, 12 + i)
+                    monitor.write("- No items requested")
+                end
+            end
+        else
+            monitor.setCursorPos(2, 5)
+            monitor.write("No colony requests found.")
+        end
+    else
+        print("Colony Integrator not found on the right.")
+    end
+else
+    print("Monitor not found on the back.")
+end
