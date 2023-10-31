@@ -1,6 +1,6 @@
 -- Find the Chat Box and Inventory Manager peripherals
-local chatBox = peripheral.wrap("left")
-local inventoryManager = peripheral.wrap("right") -- Specify the peripheral name for the Inventory Manager
+local chatBox = peripheral.find("chatBox")
+local inventoryManager = peripheral.find("inventoryManager")
 
 -- Get the owner of the Inventory Manager as a whitelisted player
 local owner = inventoryManager.getOwner()
@@ -10,35 +10,43 @@ if owner then
     local whitelistedPlayer = owner
     print("Whitelisted Player: " .. whitelistedPlayer)
 
-    -- Find the connected inventory on the top side (e.g., a chest)
-    local connectedInventory = peripheral.wrap("top")
-
     -- Listen for chat events
     while true do
         local event, username, message, _, _ = os.pullEvent("chat")
 
         -- Check if the message is from a whitelisted player
         if username == whitelistedPlayer then
-            -- Check if the message matches the specified format [item, amount]
-            local itemPattern = "%[(.-),%s*(%d+)%]"
-            local itemName, itemAmount = message:match(itemPattern)
+            -- Check if the message matches the specified format
+            local itemPatternGive = "%[(.-),%s*(%d+)%]"
+            local itemPatternRemove = "{(.-),%s*(%d+)}"
+            local itemNameGive, itemAmountGive = message:match(itemPatternGive)
+            local itemNameRemove, itemAmountRemove = message:match(itemPatternRemove)
 
-            if itemName and itemAmount then
+            if itemNameGive and itemAmountGive then
                 print("Received item request from whitelisted player " .. username)
-                print("Item Name: " .. itemName)
-                print("Item Amount: " .. itemAmount)
+                print("Item Name (Give): " .. itemNameGive)
+                print("Item Amount (Give): " .. itemAmountGive)
 
-                if connectedInventory then
-                    -- Attempt to add items to the player's inventory through the Inventory Manager
-                    local addedAmount = inventoryManager.addItemToPlayer("up", tonumber(itemAmount), nil, itemName)
+                -- Add the specified item to the whitelisted player's inventory above the Inventory Manager
+                local addedAmount = inventoryManager.addItemToPlayer("up", tonumber(itemAmountGive), nil, itemNameGive)
 
-                    if addedAmount > 0 then
-                        chatBox.sendMessageToPlayer("Added " .. addedAmount .. " " .. itemName .. " to your inventory.", username)
-                    else
-                        chatBox.sendMessageToPlayer("Failed to add the item to your inventory.", username)
-                    end
+                if addedAmount > 0 then
+                    chatBox.sendMessageToPlayer("Added " .. addedAmount .. " " .. itemNameGive .. " to your inventory.", username)
                 else
-                    chatBox.sendMessageToPlayer("No connected inventory found.", username)
+                    chatBox.sendMessageToPlayer("Failed to add the item to your inventory.", username)
+                end
+            elseif itemNameRemove and itemAmountRemove then
+                print("Received item removal request from whitelisted player " .. username)
+                print("Item Name (Remove): " .. itemNameRemove)
+                print("Item Amount (Remove): " .. itemAmountRemove)
+
+                -- Remove the specified item from the whitelisted player's inventory
+                local removedAmount = inventoryManager.removeItemFromPlayer("up", tonumber(itemAmountRemove), nil, itemNameRemove)
+
+                if removedAmount > 0 then
+                    chatBox.sendMessageToPlayer("Removed " .. removedAmount .. " " .. itemNameRemove .. " from your inventory.", username)
+                else
+                    chatBox.sendMessageToPlayer("Failed to remove the item from your inventory.", username)
                 end
             end
         end
