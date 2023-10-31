@@ -1,50 +1,24 @@
--- Find the Chat Box and Inventory Manager peripherals
-local chatBox = peripheral.wrap("left")
-local inventoryManager = peripheral.wrap("right") -- Specify the peripheral name for the Inventory Manager
+local colonyIntegrator = peripheral.wrap("back")
 
--- Get the owner of the Inventory Manager as a whitelisted player
-local owner = inventoryManager.getOwner()
+if not colonyIntegrator then
+  error("Colony Integrator not found.")
+end
 
-if owner then
-    -- You can treat the owner as a whitelisted player
-    local whitelistedPlayer = owner
-    print("Whitelisted Player: " .. whitelistedPlayer)
-
-    -- Find the connected inventory on the top side (e.g., a chest)
-    local connectedInventory = peripheral.wrap("top")
-
-    -- Listen for chat events
-    while true do
-        local event, username, message, _, _ = os.pullEvent("chat")
-
-        -- Check if the message is from a whitelisted player
-        if username == whitelistedPlayer then
-            -- Check if the message matches the specified format [item, amount]
-            local itemPattern = "%[(.-),%s*(%d+)%]"
-            local itemName, itemAmount = message:match(itemPattern)
-
-            if itemName and itemAmount then
-                print("Received item request from whitelisted player " .. username)
-                print("Item Name: " .. itemName)
-                print("Item Amount: " .. itemAmount)
-
-                if connectedInventory then
-                    -- Attempt to add items to the player's inventory through the Inventory Manager
-                    local addedAmount = inventoryManager.addItemToPlayer("up", tonumber(itemAmount), nil, itemName)
-
-                    if addedAmount > 0 then
-                        chatBox.sendMessageToPlayer("Added " .. addedAmount .. " " .. itemName .. " to your inventory.", username)
-                    else
-                        chatBox.sendMessageToPlayer("Failed to add the item to your inventory. Make sure there's enough space in your inventory.", username)
-                    end
-                else
-                    chatBox.sendMessageToPlayer("No connected inventory found. Please try again later.", username)
-                end
-            else
-                chatBox.sendMessageToPlayer("Invalid item request format. Please use [ItemName, Amount] format.", username)
-            end
-        end
+while true do
+  term.clear()
+  term.setCursorPos(1, 1)
+  local requests = colonyIntegrator.getRequests()
+  
+  if requests and #requests > 0 then
+    for i, request in ipairs(requests) do
+      term.write("Requester: " .. request.name:sub(1, 16))
+      term.write("Profession: " .. request.name:sub(1, 16))
+      term.write("Item: " .. request.items[1].displayName:sub(1, 16))
+      term.write("Amount: " .. request.items[1].count)
     end
-else
-    print("No owner found for the Inventory Manager.")
+  else
+    term.write("No requests.")
+  end
+  
+  sleep(5) -- Wait for 5 seconds before updating again
 end
