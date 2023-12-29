@@ -16,14 +16,6 @@
 }
 {
   {
-    item = "minecraft:wheat_seeds",
-    destination = "minecraft:chest_8",
-    source = "minecraft:chest_2",
-    amount = 1,
-  },
-}
-{
-  {
     item = "minecraft:potato",
     destination = "minecraft:chest_9",
     source = "minecraft:chest_2",
@@ -48,14 +40,6 @@
 }
 {
   {
-    item = "minecraft:wheat_seeds",
-    destination = "minecraft:chest_8",
-    source = "minecraft:chest_3",
-    amount = 1,
-  },
-}
-{
-  {
     item = "minecraft:potato",
     destination = "minecraft:chest_9",
     source = "minecraft:chest_3",
@@ -74,14 +58,6 @@
   {
     item = "minecraft:wheat",
     destination = "minecraft:chest_7",
-    source = "minecraft:chest_4",
-    amount = 1,
-  },
-}
-{
-  {
-    item = "minecraft:wheat_seeds",
-    destination = "minecraft:chest_8",
     source = "minecraft:chest_4",
     amount = 1,
   },
@@ -112,17 +88,10 @@
 }
 {
   {
-    item = "minecraft:wheat_seeds",
-    destination = "minecraft:chest_8",
-    source = "minecraft:chest_5",
-    amount = 1,
-  },
-}
-{
-  {
     item = "minecraft:potato",
     destination = "minecraft:chest_9",
     source = "minecraft:chest_5",
     amount = 1,
   },
 }
+
