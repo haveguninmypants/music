@@ -17,13 +17,7 @@ end
 
 -- Function to plant a spruce sapling
 function plantSpruceSapling()
-    turtle.turnLeft()
-    turtle.turnLeft()
-    turtle.back()  -- Move back to the previous position
-    turtle.place()  -- Place a spruce sapling on the ground
-    turtle.forward()  -- Move back to the starting position
-    turtle.turnLeft()
-    turtle.turnLeft()
+    turtle.place()
 end
 
 -- Function to check if a tree has grown in front
@@ -61,16 +55,15 @@ while true do
     end
 
     -- Wait for the sapling to grow into a tree
-    while not isTreeGrown() do
-        sleep(1)
+    while true do
+        if isTreeGrown() then do
+            turtle.dig()
+                turtle.foward()
+                mineLogsUpAndDown()
+                turtle.back()
+                plantSpruceSapling()
+            end
     end
 
-    -- Mine logs up and move back down
-    mineLogsUpAndDown()
-
-    -- Plant a new spruce sapling
-    plantSpruceSapling()
-
-    -- Wait for the sapling to grow into a tree again
-    sleep(300)  -- Adjust the time based on the growth rate of the saplings
+    sleep(1)  -- Adjust the time based on the growth rate of the saplings
 end
