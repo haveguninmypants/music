@@ -1,15 +1,16 @@
 -- Function to mine logs above and move back down
 function mineLogsUpAndDown()
-    local startingY = turtle.getY()
+    local upCount = 0  -- Variable to count how many times turtle goes up
 
     -- Move up while mining logs above
     while turtle.detectUp() do
         turtle.digUp()
         turtle.up()
+        upCount = upCount + 1  -- Increment the count
     end
 
     -- Move back down to the original y-level
-    while turtle.getY() > startingY do
+    for _ = 1, upCount do
         turtle.down()
     end
 end
