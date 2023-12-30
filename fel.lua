@@ -38,7 +38,27 @@ function refuelWithCoal()
     end
     return false
 end
-
+function bonemeal()
+    for slot = 1, 16 do
+        local item = turtle.getItemDetail(slot)
+        if item and item.name:lower():find("bonemeal") then
+            turtle.select(slot)
+            turtle.place()
+            return true
+        end
+    end
+    return false
+end
+function sapling()
+    for slot = 1, 16 do
+        local item = turtle.getItemDetail(slot)
+        if item and item.name:lower():find("sapling") then
+            turtle.select(slot)
+            return true
+        end
+    end
+    return false
+end
 -- Main loop
 while true do
     -- Refuel with coal from inventory
@@ -57,12 +77,16 @@ while true do
     -- Wait for the sapling to grow into a tree
     while true do
         if isTreeGrown() then do
+            
             turtle.dig()
-                turtle.foward()
+                turtle.forward()
                 mineLogsUpAndDown()
                 turtle.back()
+                sapling()
                 plantSpruceSapling()
-            end
+            end else
+            bonemeal()
+        end
     end
 
     sleep(1)  -- Adjust the time based on the growth rate of the saplings
